@@ -1,0 +1,228 @@
+package se.opendataexchange.ethernetip4j.segments;
+
+import se.opendataexchange.ethernetip4j.EthernetIpBufferUtil;
+import se.opendataexchange.ethernetip4j.EthernetIpDataTypeValidator;
+import se.opendataexchange.ethernetip4j.exceptions.InvalidTypeException;
+import se.opendataexchange.ethernetip4j.exceptions.NotImplementedException;
+import se.opendataexchange.ethernetip4j.services.CipCommandServices;
+
+/**
+ * 
+ * <table border="1">
+ * <tr><th>Byte</th><th>		Name</th><th>					Type</th><th>							Description</th></tr>
+ * <tr><td>0</td><td>			Service</td><td> 				USINT</td><td>							{@link CipCommandServices}</td></tr>
+ * <tr><td>1</td><td>			Request path size</td><td>	 	USINT</td><td> 							Tag name length (+1 if odd)</td></tr>
+ * <tr><td>2 - x</td><td>		EPATH</td><td> 					Byte[]</td><td> 						Tag name (special if structure)</td></tr>
+ * <tr><td>(x+1) - y</td><td>	Request data</td><td> 			Byte[]</td><td>							Depends on service</td></tr>
+ * </table>
+ * 
+ */
+public class CipMessageRouterRequest {
+	private static int DEFAULT_OFFSET = 
+		EthernetIpEncapsulationHeader.SEGMENT_LENGTH + 
+		EthernetIpCommandSpecificData.SEGMENT_LENGTH +
+		EthernetIpItemStruct.SEGMENT_LENGTH +
+		CipPacketRequest.SEGMENT_LENGTH +
+		CipCommandSpecificDataRequest.SEGMENT_DATA_OFFSET;
+
+	EthernetIpBufferUtil buffer;
+
+	/***
+	 * Fills input buffer. Uses default offset.
+	 * @param serviceId
+	 * @param tagName
+	 * @param value
+	 * @param arraySize
+	 * @param messageBuffer
+	 * @return Segment length.
+	 * @throws InvalidTypeException 
+	 * @throws NotImplementedException 
+	 */
+	public static int fillBuffer(int serviceId, String tagName, Object value,int arraySize, EthernetIpBufferUtil messageBuffer) throws InvalidTypeException, NotImplementedException {
+		return fillBuffer(serviceId, tagName, value, arraySize, messageBuffer, DEFAULT_OFFSET);
+	}
+	
+	public static int fillBuffer(int serviceId, String tagName, Object value,int arraySize, EthernetIpBufferUtil messageBuffer, int offset) throws InvalidTypeException, NotImplementedException {
+		int segmentLength = getSegmentLength(serviceId, tagName);
+		setService(messageBuffer, offset, (short)serviceId);
+		setRequestPathSize(messageBuffer, offset, serviceId, (short)tagName.length());
+		setEPATH(messageBuffer, offset, tagName);
+		setRequestData(messageBuffer, offset, serviceId, tagName, value, arraySize);
+		return segmentLength;
+	}
+	
+	public static int fillBuffer(int serviceId, String tagName, Object value,int arraySize, int dataOffset, EthernetIpBufferUtil messageBuffer) throws InvalidTypeException, NotImplementedException {
+		return fillBuffer(serviceId, tagName, value, arraySize, dataOffset, messageBuffer, DEFAULT_OFFSET);
+	}
+	
+	public static int fillBuffer(int serviceId, String tagName, Object value,int arraySize, int dataOffset, EthernetIpBufferUtil messageBuffer, int offset) throws InvalidTypeException, NotImplementedException {
+		int segmentLength = getSegmentLength(serviceId, tagName);
+		setService(messageBuffer, offset, (short)serviceId);
+		setRequestPathSize(messageBuffer, offset, serviceId, (short)tagName.length());
+		setEPATH(messageBuffer, offset, tagName);
+		setRequestData(messageBuffer, offset, serviceId, tagName, value, arraySize, dataOffset);
+		return segmentLength;
+	}
+	
+	
+	public static short getService(EthernetIpBufferUtil buffer, int offset) {
+		return buffer.getUSINT(0 + offset);
+	}
+		
+	public static void setService(EthernetIpBufferUtil buffer, int offset, short value) {
+		buffer.putUSINT(0 + offset, value);
+	}
+	
+	public static short getRequestPathSize(EthernetIpBufferUtil buffer, int offset) {
+		return buffer.getUSINT(1 + offset);
+	}
+	
+	public static void setRequestPathSize(EthernetIpBufferUtil buffer, int offset, int serviceId, short value) {
+		if(isOdd(value)){
+			buffer.putByte(1 + offset, (byte)((value+3)/2));
+		}
+		else{
+			buffer.putByte(1 + offset, (byte)((value+2)/2));
+		}
+	}
+	
+	public static short getExtendedSymbolSegment(EthernetIpBufferUtil buffer, int offset) {
+		return buffer.getByte(2 + offset);
+	}
+	
+	public static void setExtendedSymbolSegment(EthernetIpBufferUtil buffer, int offset, short value) {
+		buffer.putByte(2 + offset,(byte) value);
+	}
+	
+	public static short getRequestDataSize(EthernetIpBufferUtil buffer, int offset) {
+		return buffer.getByte(3 + offset);
+	}
+	
+	public static void setRequestDataSize(EthernetIpBufferUtil buffer, int offset, short value) {
+		buffer.putByte(3 + offset,(byte) value);
+	}
+	
+	public static byte[] getRequestTagName(EthernetIpBufferUtil buffer, int offset) {
+		return buffer.getByteArray(4 + offset, getRequestDataSize(buffer, offset));
+	}
+	
+	public static void setEPATH(EthernetIpBufferUtil buffer, int offset, String tagName) throws NotImplementedException {
+		//Check for . in tag name. This means that we should add 
+		//an extended symbol segment for each . and a size of the following tag
+		if(tagName.contains(".")){
+			if (true)
+				throw new NotImplementedException(); //TODO: Test this!!
+			String[] tagNames = tagName.split("\\.");
+			short xoffset = 2;
+			for(String tag : tagNames){
+				buffer.putByte(xoffset + offset,(byte)0x91); //Extended symbol
+				xoffset++;
+				buffer.putByte(xoffset + offset,(byte)tag.length()); //Length of tag name
+				xoffset++;
+				buffer.putByteArray(xoffset + offset, tag.getBytes()); //Tag name
+				xoffset+=tag.length();
+				if(isOdd(tag.length())){
+					buffer.putByteArray(xoffset + offset, new byte[] {0x00}); //Pad with extra 00 byte if odd
+					xoffset++;
+				}
+			}
+		}else{
+			setExtendedSymbolSegment(buffer, offset, (short)0x91);
+			setRequestDataSize(buffer, offset, (short)(tagName.length()));
+			buffer.putByteArray(4 + offset, tagName.getBytes());
+			if(isOdd(tagName.length())){
+				buffer.putByteArray(4+tagName.length() + offset, new byte[] {0x00});
+			}
+		}
+	}
+	
+	public static byte[] getRequestData(EthernetIpBufferUtil buffer, int offset) {
+		return buffer.getByteArray(4 + offset, getRequestDataSize(buffer, offset));
+	}
+	
+	public static void setRequestData(EthernetIpBufferUtil buffer, int offset, int serviceId, String tagName, Object value,int arraySize) throws InvalidTypeException, NotImplementedException {
+		int tmpOffset = 4 + getIOILength(tagName) + offset;
+		if(serviceId == CipCommandServices.CIP_READ_DATA){
+			buffer.putUINT(0 + tmpOffset, arraySize);			
+		} else if(serviceId == CipCommandServices.CIP_WRITE_DATA){
+			buffer.putByte(0 + tmpOffset, EthernetIpDataTypeValidator.getType(value));
+			buffer.putUINT(2 + tmpOffset, arraySize);
+			EthernetIpDataTypeValidator.putValue(value, buffer, 4 + tmpOffset);
+		}
+	}
+	
+	public static void setRequestData(EthernetIpBufferUtil buffer, int offset, int serviceId, String tagName, Object value,int arraySize,int dataOffset) throws InvalidTypeException {
+		int tmpOffset = isOdd(tagName.length()) ? 5 : 4;
+		tmpOffset +=  getIOILength(tagName) + offset;
+		if(serviceId == CipCommandServices.CIP_READ_FRAGMENT){
+			buffer.putUINT(0 + tmpOffset, arraySize);
+			buffer.putUDINT(2 + tmpOffset, dataOffset);			
+		}
+	}
+	
+	private static boolean isOdd(int tagNameLength){
+		return (tagNameLength%2 != 0);
+	}
+	
+	public static int getSegmentLength(int serviceId, String tagName) {
+		int length = 0;
+		if(serviceId == CipCommandServices.CIP_READ_DATA){
+			if(tagName.contains(".")){
+				String[] tagNames = tagName.split("\\.");
+				length = 6+tagName.length()+tagNames.length-1;
+				for(String tag : tagNames){
+					if(isOdd(tag.length())){
+						length++;
+					}
+				}
+			}else{
+				length = 6+tagName.length();
+				if(isOdd(tagName.length()))
+					length++;
+			}
+		} else if(serviceId == CipCommandServices.CIP_WRITE_DATA){
+			if(tagName.contains(".")){
+				String[] tagNames = tagName.split("\\.");
+				length = 18+tagName.length()+tagNames.length-1;
+				for(String tag : tagNames){
+					if(isOdd(tag.length())){
+						length++;
+					}
+				}
+			}else{
+				length = 18+tagName.length();
+				if(isOdd(tagName.length()))
+					length++;
+			}
+		}else if(serviceId == CipCommandServices.CIP_READ_FRAGMENT){
+			if(tagName.contains(".")){
+				String[] tagNames = tagName.split("\\.");
+				length = 10+tagName.length()+tagNames.length-1;
+				for(String tag : tagNames){
+					if(isOdd(tag.length())){
+						length++;
+					}
+				}
+			}else{
+				length = 10+tagName.length();
+				if(isOdd(tagName.length()))
+					length++;
+			}
+		}
+		return length;
+	}
+	
+	private static int getIOILength(String tagName){
+		if(tagName.contains(".")){
+			int length = 0;
+			String[] tagNames = tagName.split("\\.");
+			for(String tag : tagNames){
+				length += tag.length()+2;
+				if(isOdd(tag.length()))
+					length++;
+			}
+			return length-2;
+		}
+		return tagName.length();
+	}	
+}
