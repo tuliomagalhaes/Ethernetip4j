@@ -43,7 +43,7 @@ public class CipMessageRouterRequest {
 	}
 	
 	public static int fillBuffer(int serviceId, String tagName, Object value,int arraySize, EthernetIpBufferUtil messageBuffer, int offset) throws InvalidTypeException, NotImplementedException {
-		int segmentLength = getSegmentLength(serviceId, tagName);
+		int segmentLength = getSegmentLength(serviceId, tagName, value, arraySize);
 		setService(messageBuffer, offset, (short)serviceId);
 		setRequestPathSize(messageBuffer, offset, serviceId, (short)tagName.length());
 		setEPATH(messageBuffer, offset, tagName);
@@ -56,7 +56,7 @@ public class CipMessageRouterRequest {
 	}
 	
 	public static int fillBuffer(int serviceId, String tagName, Object value,int arraySize, int dataOffset, EthernetIpBufferUtil messageBuffer, int offset) throws InvalidTypeException, NotImplementedException {
-		int segmentLength = getSegmentLength(serviceId, tagName);
+		int segmentLength = getSegmentLength(serviceId, tagName, value, arraySize);
 		setService(messageBuffer, offset, (short)serviceId);
 		setRequestPathSize(messageBuffer, offset, serviceId, (short)tagName.length());
 		setEPATH(messageBuffer, offset, tagName);
@@ -64,6 +64,33 @@ public class CipMessageRouterRequest {
 		return segmentLength;
 	}
 	
+	/***
+	 * 
+	 * @param serviceId
+	 * @param tagName
+	 * @param value
+	 * @param arraySize
+	 * @param dataOffset
+	 * @param writeCount when writing segmented arrays, this is how many values from the array to be put into the message
+	 * @param messageBuffer
+	 * @return CIP message length (segment length).
+	 * @throws InvalidTypeException
+	 * @throws NotImplementedException
+	 */
+	public static int fillBuffer(int serviceId, String tagName, Object value,int arraySize, int dataOffset, int writeCount, EthernetIpBufferUtil messageBuffer) throws InvalidTypeException, NotImplementedException {
+		return fillBuffer(serviceId, tagName, value, arraySize, dataOffset, writeCount, messageBuffer, DEFAULT_OFFSET);
+	}
+	
+	public static int fillBuffer(int serviceId, String tagName, Object value,int arraySize, int dataOffset, int writeCount, EthernetIpBufferUtil messageBuffer, int offset) throws InvalidTypeException, NotImplementedException {
+		int segmentLength = getSegmentLength(serviceId, tagName, value, writeCount);
+		setService(messageBuffer, offset, (short)serviceId);
+		setRequestPathSize(messageBuffer, offset, serviceId, (short)tagName.length());
+		setEPATH(messageBuffer, offset, tagName);
+		setRequestData(messageBuffer, offset, serviceId, tagName, value, arraySize, dataOffset, writeCount);
+		return segmentLength;
+	}
+	
+	/*** Region: Getters and setters ***/
 	
 	public static short getService(EthernetIpBufferUtil buffer, int offset) {
 		return buffer.getUSINT(0 + offset);
@@ -141,22 +168,47 @@ public class CipMessageRouterRequest {
 	}
 	
 	public static void setRequestData(EthernetIpBufferUtil buffer, int offset, int serviceId, String tagName, Object value,int arraySize) throws InvalidTypeException, NotImplementedException {
-		int tmpOffset = 4 + getIOILength(tagName) + offset;
+		int tmpOffset = isOdd(tagName.length()) ? 5 : 4;
+		tmpOffset += getIOILength(tagName) + offset;
 		if(serviceId == CipCommandServices.CIP_READ_DATA){
-			buffer.putUINT(0 + tmpOffset, arraySize);			
+			buffer.putUINT(0 + tmpOffset, arraySize);
 		} else if(serviceId == CipCommandServices.CIP_WRITE_DATA){
 			buffer.putByte(0 + tmpOffset, EthernetIpDataTypeValidator.getType(value));
 			buffer.putUINT(2 + tmpOffset, arraySize);
-			EthernetIpDataTypeValidator.putValue(value, buffer, 4 + tmpOffset);
+			if (arraySize > 1)
+				EthernetIpDataTypeValidator.putValues(value, buffer, 4 + tmpOffset, arraySize, 0);
+			else
+				EthernetIpDataTypeValidator.putValue(value, buffer, 4 + tmpOffset);
+			
+		}else{
+			throw new NotImplementedException();
 		}
 	}
 	
-	public static void setRequestData(EthernetIpBufferUtil buffer, int offset, int serviceId, String tagName, Object value,int arraySize,int dataOffset) throws InvalidTypeException {
+	public static void setRequestData(EthernetIpBufferUtil buffer, int offset, int serviceId, String tagName, Object value,int arraySize,int dataOffset) throws InvalidTypeException, NotImplementedException {
 		int tmpOffset = isOdd(tagName.length()) ? 5 : 4;
 		tmpOffset +=  getIOILength(tagName) + offset;
 		if(serviceId == CipCommandServices.CIP_READ_FRAGMENT){
 			buffer.putUINT(0 + tmpOffset, arraySize);
 			buffer.putUDINT(2 + tmpOffset, dataOffset);			
+		} else{
+			throw new NotImplementedException();
+		}
+	}
+	
+	public static void setRequestData(EthernetIpBufferUtil buffer, int offset, int serviceId, String tagName, Object value,int arraySize,int dataOffset, int writeCount) throws InvalidTypeException, NotImplementedException {
+		int tmpOffset = isOdd(tagName.length()) ? 5 : 4;
+		tmpOffset +=  getIOILength(tagName) + offset;
+		if (serviceId == CipCommandServices.CIP_WRITE_FRAGMENT){
+			buffer.putByte(0 + tmpOffset, EthernetIpDataTypeValidator.getType(value));
+			buffer.putUINT(2 + tmpOffset, arraySize);
+			buffer.putUINT(4 + tmpOffset, dataOffset);
+			if (arraySize > 1)
+				EthernetIpDataTypeValidator.putValues(value, buffer, 8 + tmpOffset, writeCount, dataOffset);
+			else
+				EthernetIpDataTypeValidator.putValue(value, buffer, 8 + tmpOffset);			
+		} else{
+			throw new NotImplementedException();
 		}
 	}
 	
@@ -164,7 +216,17 @@ public class CipMessageRouterRequest {
 		return (tagNameLength%2 != 0);
 	}
 	
-	public static int getSegmentLength(int serviceId, String tagName) {
+	/***
+	 * Get length of CIP request segment.
+	 * 
+	 * @param serviceId
+	 * @param tagName
+	 * @param value Value to write. Null in case of read requests.
+	 * @param writeCount How many values to write. 0 in case of read requests.
+	 * @return CIP message length (segment length).
+	 * @throws NotImplementedException 
+	 */
+	public static int getSegmentLength(int serviceId, String tagName, Object value, int writeCount) throws NotImplementedException {
 		int length = 0;
 		if(serviceId == CipCommandServices.CIP_READ_DATA){
 			if(tagName.contains(".")){
@@ -180,20 +242,26 @@ public class CipMessageRouterRequest {
 				if(isOdd(tagName.length()))
 					length++;
 			}
-		} else if(serviceId == CipCommandServices.CIP_WRITE_DATA){
+		} else if(serviceId == CipCommandServices.CIP_WRITE_DATA || serviceId == CipCommandServices.CIP_WRITE_FRAGMENT){
 			if(tagName.contains(".")){
 				String[] tagNames = tagName.split("\\.");
-				length = 18+tagName.length()+tagNames.length-1;
+				length = 8+tagName.length()+tagNames.length-1;
 				for(String tag : tagNames){
 					if(isOdd(tag.length())){
 						length++;
 					}
 				}
 			}else{
-				length = 18+tagName.length();
+				length = 8+tagName.length();
 				if(isOdd(tagName.length()))
 					length++;
 			}
+			// Add data value size			
+			length += EthernetIpDataTypeValidator.sizeOf(value)*writeCount;
+			if (serviceId == CipCommandServices.CIP_WRITE_FRAGMENT)
+				length += 4; // For the data offset
+			if (isOdd(length)) length++;
+			
 		}else if(serviceId == CipCommandServices.CIP_READ_FRAGMENT){
 			if(tagName.contains(".")){
 				String[] tagNames = tagName.split("\\.");

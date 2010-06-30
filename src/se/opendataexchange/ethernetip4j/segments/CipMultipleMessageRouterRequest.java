@@ -25,11 +25,11 @@ public class CipMultipleMessageRouterRequest{
 		CipPacketRequest.SEGMENT_LENGTH +
 		CipCommandSpecificDataRequest.SEGMENT_DATA_OFFSET;
 	
-	public static int getSegmentLength(String[] tagNames)
+	public static int getSegmentLength(String[] tagNames) throws NotImplementedException
 	{
 		int length = 8 + (tagNames.length*2); // header + sizes of all messages
 		for(String tagName : tagNames)
-			length += CipMessageRouterRequest.getSegmentLength(0x4C, tagName);
+			length += CipMessageRouterRequest.getSegmentLength(0x4C, tagName, null, 0);
 		return length +2; //TODO: Remove after confirmation
 	}
 	
@@ -44,7 +44,10 @@ public class CipMultipleMessageRouterRequest{
 				e.printStackTrace();
 			}
 			buffer.putUINT(8 + x*2 + DEFAULT_OFFSET, bufferOffsetMessage - 6); // Header not included in the offset
-			bufferOffsetMessage += CipMessageRouterRequest.getSegmentLength(0x4C, tagNames[x]);
+			if (values != null)
+				bufferOffsetMessage += CipMessageRouterRequest.getSegmentLength(0x4C, tagNames[x], values[x], 1);
+			else
+				bufferOffsetMessage += CipMessageRouterRequest.getSegmentLength(0x4C, tagNames[x], null, 1);
 		}
 		return bufferOffsetMessage + 2;//TODO: Remove after confirmation
 	}

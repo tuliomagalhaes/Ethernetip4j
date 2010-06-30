@@ -44,13 +44,14 @@ public class UnconnectedMessageManagerRequestTest {
 		UnconnectedMessageManagerRequest req = new UnconnectedMessageManagerRequest(messageBuffer);
 		req.asReadRequestBuffer("Qwerty123", 33320814456621284L, 4);
 		byte[] actual = req.getByteBuffer().array();
+		// Byte 0x04 on index 64 is size (previously on 63 due to bug in CipMessageRouterRequest.setRequestData).
 		byte[] expected = new byte[]{(byte)0x6F, (byte)0x00, (byte)0x2E, (byte)0x00, (byte)0xE4, (byte)0x48, (byte)0x50, (byte)0xAD, (byte)0x00, (byte)0x00, 
 				(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 
 				(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 
 				(byte)0x02, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xB2, (byte)0x00, (byte)0x1E, (byte)0x00, 
 				(byte)0x52, (byte)0x02, (byte)0x20, (byte)0x06, (byte)0x24, (byte)0x01, (byte)0x0A, (byte)0xF0, (byte)0x10, (byte)0x00, 
 				(byte)0x4C, (byte)0x06, (byte)0x91, (byte)0x09, (byte)0x51, (byte)0x77, (byte)0x65, (byte)0x72, (byte)0x74, (byte)0x79, 
-				(byte)0x31, (byte)0x32, (byte)0x33, (byte)0x04, (byte)0x00, (byte)0x00, (byte)0x01, (byte)0x00, (byte)0x01, (byte)0x00};
+				(byte)0x31, (byte)0x32, (byte)0x33, (byte)0x00, (byte)0x04, (byte)0x00, (byte)0x01, (byte)0x00, (byte)0x01, (byte)0x00};
 		//Assert.assertEquals(expected.length, actual.length);
 		for (int i=0; i<expected.length; i++)
 		{
@@ -83,16 +84,32 @@ public class UnconnectedMessageManagerRequestTest {
 		UnconnectedMessageManagerRequest req = new UnconnectedMessageManagerRequest(messageBuffer);
 		req.asWriteRequestByteBuffer("QxLLKjbmr", 0xFABCDFABCDFABCDDL, (char)14, 25);
 		byte[] actual = req.getByteBuffer().array();
-		byte[] expected = new byte[]{(byte)0x6F, (byte)0x00, (byte)0x3A, (byte)0x00, (byte)0xDD, (byte)0xBC, (byte)0xFA, (byte)0xCD, (byte)0x00, (byte)0x00, 
+		// 0x4A on index=2 is message size (was previously 0x3A due to bug in CipMessageRouterRequest.getSegmentLength)
+		// 0x2A on index=38 is cip size (was previously 0x2A due to bug in CipMessageRouterRequest.getSegmentLength)
+		// 0x2C on index=48 is CipCommandSpecificDataRequest.setMessageRequestSize (was previously 0x1C due to bug in CipMessageRouterRequest.getSegmentLength)
+		// Pad byte on index 63 was previously missing.
+		byte[] expected = new byte[]{(byte)0x6F, (byte)0x00, (byte)0x4A, (byte)0x00, (byte)0xDD, (byte)0xBC, (byte)0xFA, (byte)0xCD, (byte)0x00, (byte)0x00, 
 				(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 
 				(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 
-				(byte)0x02, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xB2, (byte)0x00, (byte)0x2A, (byte)0x00, 
-				(byte)0x52, (byte)0x02, (byte)0x20, (byte)0x06, (byte)0x24, (byte)0x01, (byte)0x0A, (byte)0xF0, (byte)0x1C, (byte)0x00, 
+				(byte)0x02, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xB2, (byte)0x00, (byte)0x3A, (byte)0x00, 
+				(byte)0x52, (byte)0x02, (byte)0x20, (byte)0x06, (byte)0x24, (byte)0x01, (byte)0x0A, (byte)0xF0, (byte)0x2C, (byte)0x00, 
 				(byte)0x4D, (byte)0x06, (byte)0x91, (byte)0x09, (byte)0x51, (byte)0x78, (byte)0x4C, (byte)0x4C, (byte)0x4B, (byte)0x6A, 
-				(byte)0x62, (byte)0x6D, (byte)0x72, (byte)0xC2, (byte)0x00, (byte)0x19, (byte)0x00, (byte)0x0E, (byte)0x00, (byte)0x00, 
-				(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x01, (byte)0x00, 
-				(byte)0x01, (byte)0x00};
+				(byte)0x62, (byte)0x6D, (byte)0x72, (byte)0x00, (byte)0xC2, (byte)0x00, (byte)0x19, (byte)0x00, (byte)0x0E, (byte)0x00, (byte)0x00, 
+				(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 
+				(byte)0x00, (byte)0x00};
+				//(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x01, (byte)0x00, 
+				//(byte)0x01, (byte)0x00}; TODO: Look what the old program did with illegal requests (array size > 1, but no array input 
 		//Assert.assertEquals(expected.length, actual.length);
+		/*
+		for (int i=0; i<Math.min(actual.length, expected.length); i++){
+			if (i < actual.length && i < expected.length)
+				Log.p(i+"\t" +HexConverter.byte2hex(actual[i]) +" " +HexConverter.byte2hex(expected[i]));
+			else if (i < actual.length)
+				Log.p(i+"\t" +HexConverter.byte2hex(actual[i]) +" xx");
+			else if (i < expected.length)
+				Log.p(i+"\t xx " +HexConverter.byte2hex(expected[i]));
+		}*/
+		
 		for (int i=0; i<expected.length; i++)
 		{
 			Assert.assertEquals("Byte: "+i+": expected 0x"+HexConverter.byte2hex(expected[i]) +" got 0x"+HexConverter.byte2hex(actual[i]), expected[i], actual[i]);
