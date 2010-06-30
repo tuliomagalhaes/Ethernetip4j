@@ -7,7 +7,7 @@ import se.opendataexchange.ethernetip4j.EthernetIpBufferUtil;
  *
  * Type	ID		UINT
  * Length		UINT			Length in bytes of the Data field
- * Data			{@link CipPacket}
+ * Data			
  * 
  * @see <a href="Vol2_1.4.pdf">THE CIP NETWORKS LIBRARY Volume 2 EtherNet/IP Adaptation of CIP</a>
  *

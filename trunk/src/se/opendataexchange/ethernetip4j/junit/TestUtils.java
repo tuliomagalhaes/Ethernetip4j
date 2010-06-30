@@ -3,7 +3,6 @@ package se.opendataexchange.ethernetip4j.junit;
 import java.nio.ByteBuffer;
 
 import se.opendataexchange.ethernetip4j.HexConverter;
-import se.opendataexchange.ethernetip4j.Log;
 import se.opendataexchange.ethernetip4j.exceptions.NotImplementedException;
 
 
@@ -15,7 +14,6 @@ public class TestUtils {
 		if (CRASHON_PRINTS)
 			throw new NotImplementedException();
 		
-		Log.p("Limit: "+buffer.limit());
 		printByteBuffer(buffer, 0, buffer.limit());
 	}
 	public static void printByteBuffer(ByteBuffer buffer, int offset, int count) throws NotImplementedException {

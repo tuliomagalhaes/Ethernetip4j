@@ -4,7 +4,6 @@ import java.security.InvalidParameterException;
 
 import se.opendataexchange.ethernetip4j.EthernetIpBufferUtil;
 import se.opendataexchange.ethernetip4j.HexConverter;
-import se.opendataexchange.ethernetip4j.Log;
 import se.opendataexchange.ethernetip4j.exceptions.EmbeddedServiceException;
 import se.opendataexchange.ethernetip4j.exceptions.InsufficientCommandException;
 import se.opendataexchange.ethernetip4j.exceptions.InsufficientNrOfAttributesException;
@@ -102,7 +101,7 @@ public class CipPacketResponse {
 			if((service!=0xD2)&&(service!=0xCC))
 				throw new ResponseBufferOverflowException("The amount of data requested would not fit into the response buffer. Partial data transfer has occurred. Error code: 0x06");
 			else{
-				Log.p("Wtf is this?");
+				// Fragmented read, more is to come
 				return true;
 			}
 		case 0x0A:
@@ -123,7 +122,7 @@ public class CipPacketResponse {
 				sb.append(HexConverter.byte2hex(buffer.getByte(offset + i))).append(" ");
 			throw new OtherWithExtendedCodeException("Error with extended status. Error code: 0xFF. Bytes: " + sb.toString());					
 		default:
-			throw new OtherWithExtendedCodeException("Error with extended status");
+			throw new OtherWithExtendedCodeException("Error with extended status: "+error);
 		}
 	}
 	

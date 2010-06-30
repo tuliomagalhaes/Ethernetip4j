@@ -43,7 +43,7 @@ public class TestPerformance {
 	private long runTimeMs = 30000;
 	StringBuilder log = new StringBuilder();
 	
-	private void testMeanTimeSingleVar() throws IOException, PathSegmentException, ItemNotFoundException, ProcessingAttributesException, InsufficientCommandException, InsufficientNrOfAttributesException, OtherWithExtendedCodeException, ResponseBufferOverflowException, InvalidTypeException, EmbeddedServiceException, NotImplementedException {
+	public void testMeanTimeSingleVar() throws IOException, PathSegmentException, ItemNotFoundException, ProcessingAttributesException, InsufficientCommandException, InsufficientNrOfAttributesException, OtherWithExtendedCodeException, ResponseBufferOverflowException, InvalidTypeException, EmbeddedServiceException, NotImplementedException {
 		connector = new SimpleLogixCommunicator("192.168.200.51", 0xAF12);
 		long tStart = System.currentTimeMillis();
 		long intervalStart = tStart;

@@ -33,6 +33,9 @@ public class EthernetIpDataTypeValidator {
 		else if (value instanceof Float){
 			return REAL;
 		}
+		else if (value instanceof Object[]){
+			return getType(((Object[])value)[0]);
+		}
 		throw new NotImplementedException();
 	}
 	
@@ -47,7 +50,7 @@ public class EthernetIpDataTypeValidator {
 	 * 
 	 * @param buffer
 	 * @param offset
-	 * @return
+	 * @return Tag values
 	 * @throws InvalidTypeException 
 	 */
 	public static Object getValues(EthernetIpBufferUtil buffer, int offset, int payload) throws InvalidTypeException{
@@ -60,6 +63,7 @@ public class EthernetIpDataTypeValidator {
 				for (int x = 0; x < count; x++){
 					object[x] = new Boolean(buffer.getByte(2 + x + offset) != 0);
 				}
+				return object;
 			}else if (count==1){
 				return new Boolean(buffer.getByte(2 + offset) != 0);
 			}
@@ -71,8 +75,10 @@ public class EthernetIpDataTypeValidator {
 			if (count > 1){
 				Character[] object = new Character[count];
 				for (int x = 0; x < count; x++){
-					object[x] = buffer.getSINT(2 + x + offset);
+					char c = buffer.getSINT(2 + x + offset);
+					object[x] = c;
 				}
+				return object;
 			}else if (count==1){
 				return buffer.getSINT(2 + offset);
 			}
@@ -84,6 +90,7 @@ public class EthernetIpDataTypeValidator {
 				for (int x = 0; x < count; x++){
 					object[x] = buffer.getINT(2 + 2*x + offset);
 				}
+				return object;
 			}else if (count==1){
 				return buffer.getINT(2 + offset);
 			}
@@ -118,6 +125,21 @@ public class EthernetIpDataTypeValidator {
 		return null;
 	}
 
+	public static void putValues(Object value, EthernetIpBufferUtil buffer, int offset, int arraySize, int dataOffset) throws NotImplementedException {
+		if (value instanceof Object[]){
+			int tmpOffset = offset;
+			Object[] v = (Object[]) value;
+			int vSize = sizeOf(v[0]);
+			int startIdx = dataOffset/vSize;
+			for (int i=startIdx; i<(startIdx + arraySize); i++){
+				putValue(v[i], buffer, tmpOffset);
+				tmpOffset += vSize;
+			}
+		}else{
+			putValue(value, buffer, offset);
+		}
+	}
+	
 	public static void putValue(Object value, EthernetIpBufferUtil buffer, int offset) throws NotImplementedException {
 		if (value instanceof Boolean)
 			if ((Boolean)value)
@@ -134,10 +156,24 @@ public class EthernetIpDataTypeValidator {
 			buffer.putDINT(offset, (Integer)value);
 		else if (value instanceof Float)
 			buffer.putREAL(offset, (Float)value);
+		else if (value instanceof Object[])
+			putValue(((Object[])value)[0], buffer, offset);
 		else
 		{
 			throw new NotImplementedException();
 		}
+	}
+	
+	public static int sizeOf(Object value) throws NotImplementedException {
+		switch(getType(value)){
+		case BOOL: return 1;
+		case BIT_ARRAY: return ((byte[])value).length;
+		case SINT: return 1;
+		case INT: return 2;
+		case DINT: return 4;
+		case REAL: return 4;
+		}
+		throw new NotImplementedException();
 	}
 	
 	public static void putTypeAndValue(Object value, EthernetIpBufferUtil buffer, int offset) throws NotImplementedException {
@@ -156,8 +192,7 @@ public class EthernetIpDataTypeValidator {
 	 * 
 	 * @param buffer
 	 * @param offset
-	 * @param payload The values' size
-	 * @return
+	 * @return Tag values
 	 * @throws InvalidTypeException 
 	 */	
 	public static Object getValues(EthernetIpBufferUtil buffer, int offset) throws InvalidTypeException {

@@ -29,7 +29,7 @@ public class UnconnectedMessagingRead extends UnconnectedMessaging{
 	
 	/***
 	 * 
-	 * @return
+	 * @return Tag values from response
 	 */
 	public Object[] getValue(){
 		try {

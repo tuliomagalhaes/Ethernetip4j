@@ -255,7 +255,7 @@ public class EthernetIpBufferUtil {
 	/***
 	 * Get 4 byte signed value from buffer
 	 * @param offset
-	 * @return
+	 * @return The int value.
 	 */
 	public int getDINT(int offset) {
 		return buffer.getInt(offset);
@@ -275,9 +275,9 @@ public class EthernetIpBufferUtil {
 	public void putSINT(char value, int offset) {
 		buffer.put(offset, (byte) value);
 	}
+	
 	/***
 	 * 2 byte signed integer
-	 * @param va
 	 */
 	public void putINT(int offset, short value) {
 		buffer.putShort(offset, value);		

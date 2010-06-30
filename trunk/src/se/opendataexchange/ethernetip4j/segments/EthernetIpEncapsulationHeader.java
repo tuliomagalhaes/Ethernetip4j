@@ -1,12 +1,7 @@
 package se.opendataexchange.ethernetip4j.segments;
 
-import java.nio.ByteBuffer;
-
 import se.opendataexchange.ethernetip4j.EthernetIpBufferUtil;
-import se.opendataexchange.ethernetip4j.Log;
 import se.opendataexchange.ethernetip4j.exceptions.InvalidEncapsulationPackageException;
-import se.opendataexchange.ethernetip4j.exceptions.NotImplementedException;
-import se.opendataexchange.ethernetip4j.junit.TestUtils;
 
 /***
  * Represents the encapsulation packet header according to the EtherNet/IP Specification:
@@ -83,14 +78,4 @@ public class EthernetIpEncapsulationHeader{
 		buffer.putUDINT(20 + DEFAULT_OFFSET, (short)options);
 	}
 	
-	public static void printHeaderInfo(EthernetIpBufferUtil buffer) throws NotImplementedException{
-		Log.p("Command: "+getCommand(buffer));
-		Log.p("Length: "+getLength(buffer));
-		Log.p("SessionHandle: "+getSessionHandle(buffer));
-		Log.p("Status: "+getStatus(buffer));
-		Log.p("Session context: ");
-		TestUtils.printByteBuffer(ByteBuffer.wrap(getSenderContext(buffer)));
-		Log.p("");
-		Log.p("Options "+getOptions(buffer));
-	}
 }
