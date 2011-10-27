@@ -14,8 +14,7 @@ import se.opendataexchange.ethernetip4j.services.EthernetIpRegisterSessionReques
  * 
  */
 public class ControlLogixConnector{
-	//
-	EthernetIpBufferUtil incomingBuffer = new EthernetIpBufferUtil(100);
+	EthernetIpBufferUtil incomingBuffer = new EthernetIpBufferUtil(1500);
 	
 	private ByteBuffer sending;
 	private ByteBuffer receiving;

@@ -173,7 +173,7 @@ public class CipMessageRouterRequest {
 		if(serviceId == CipCommandServices.CIP_READ_DATA){
 			buffer.putUINT(0 + tmpOffset, arraySize);
 		} else if(serviceId == CipCommandServices.CIP_WRITE_DATA){
-			buffer.putByte(0 + tmpOffset, EthernetIpDataTypeValidator.getType(value));
+			buffer.putINT(0 + tmpOffset, EthernetIpDataTypeValidator.getType(value));
 			buffer.putUINT(2 + tmpOffset, arraySize);
 			if (arraySize > 1)
 				EthernetIpDataTypeValidator.putValues(value, buffer, 4 + tmpOffset, arraySize, 0);
@@ -200,9 +200,9 @@ public class CipMessageRouterRequest {
 		int tmpOffset = isOdd(tagName.length()) ? 5 : 4;
 		tmpOffset +=  getIOILength(tagName) + offset;
 		if (serviceId == CipCommandServices.CIP_WRITE_FRAGMENT){
-			buffer.putByte(0 + tmpOffset, EthernetIpDataTypeValidator.getType(value));
+			buffer.putINT(0 + tmpOffset, EthernetIpDataTypeValidator.getType(value));
 			buffer.putUINT(2 + tmpOffset, arraySize);
-			buffer.putUINT(4 + tmpOffset, dataOffset);
+			buffer.putDINT(4 + tmpOffset, dataOffset);
 			if (arraySize > 1)
 				EthernetIpDataTypeValidator.putValues(value, buffer, 8 + tmpOffset, writeCount, dataOffset);
 			else

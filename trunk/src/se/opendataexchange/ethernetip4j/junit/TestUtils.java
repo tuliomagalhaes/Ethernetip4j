@@ -75,4 +75,45 @@ public class TestUtils {
 		bb.putShort(i);
 		printByteBuffer(bb);
 	}
+	
+	/***
+	 * Randomize all values in object array.
+	 * Integer (DINT, 4 bytes)
+	 * Short (INT, 2 bytes, [-32767, 32767])
+	 * Boolean (0, 1)
+	 * Character (SINT, 1 byte [0, 255]
+	 * Float (REAL, 4 bytes [-1000, 1000]
+	 * @param v
+	 * @throws NotImplementedException 
+	 */
+	public static void randomize(Object[] v) throws NotImplementedException{
+		if (v instanceof Integer[]){
+			for(int i=0; i<v.length; i++){
+				v[i] = getRandom(Integer.MIN_VALUE, Integer.MAX_VALUE);
+			}
+		}else if (v instanceof Short[]){
+			for(int i=0; i<v.length; i++){
+				v[i] = (short)getRandom(Short.MIN_VALUE, Short.MAX_VALUE);
+			}
+		}else if (v instanceof Boolean[]){
+			for(int i=0; i<v.length; i++){
+				v[i] = (getRandom(0, 1) == 1);
+			}
+		}else if (v instanceof Character[]){
+			for(int i=0; i<v.length; i++){
+				v[i] = (char)getRandom(0, 127); // 255
+			}
+		}else if (v instanceof Float[]){
+			for(int i=0; i<v.length; i++){
+				v[i] = (float)(-1000.0 + Math.random()*1000.0);
+			}
+		}else{
+			throw new NotImplementedException();
+		}
+	}
+	
+	private static int getRandom(int min, int max){
+		double a = min + Math.random()*(max - min);
+		return (int)Math.round(a);
+	}
 }
