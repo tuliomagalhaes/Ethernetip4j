@@ -22,7 +22,6 @@ import se.opendataexchange.ethernetip4j.services.UnconnectedMessageManagerRespon
  * A class for communication with the plc system.
  */
 public class SimpleLogixCommunicator extends ControlLogixConnector {
-	EthernetIpBufferUtil incomingBuffer = new EthernetIpBufferUtil(1500);
 	EthernetIpBufferUtil messageBuffer = new EthernetIpBufferUtil(1500);
 	UnconnectedMessageManagerRequest request = new UnconnectedMessageManagerRequest(messageBuffer);
 	UnconnectedMessageManagerResponse response = new UnconnectedMessageManagerResponse(incomingBuffer);
@@ -182,7 +181,7 @@ public class SimpleLogixCommunicator extends ControlLogixConnector {
 			else
 				vSize = EthernetIpDataTypeValidator.sizeOf(value);
 			totSize = arraySize * vSize;
-			if (totSize < MAX_WRITE_PAYLOAD){ // Normal write
+			if (totSize <= MAX_WRITE_PAYLOAD){ // Normal write
 				request.asWriteRequestByteBuffer(tagName, this.sessionHandle, value, arraySize);
 				this.sendData(request.getByteBuffer());
 				try{ Thread.sleep(5); }catch(InterruptedException e){}
@@ -193,7 +192,7 @@ public class SimpleLogixCommunicator extends ControlLogixConnector {
 				int nbrWritten = 0;
 				int writeCount;
 				while (nbrWritten < arraySize){
-					writeCount = Math.min(MAX_WRITE_PAYLOAD/vSize, arraySize-nbrWritten); // Max in 1 packet or all values left
+					writeCount = Math.min((MAX_WRITE_PAYLOAD/vSize)-1, arraySize-nbrWritten); // Max in 1 packet or all values left
 					request.asWriteRequestByteBuffer(tagName, this.sessionHandle, value, arraySize, dataOffset, writeCount);
 					this.sendData(request.getByteBuffer());
 					super.receiveData(incomingBuffer.getBuffer());

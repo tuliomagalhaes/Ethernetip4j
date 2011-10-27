@@ -22,7 +22,7 @@ public class EthernetIpBufferUtil {
 	private ByteBuffer tmpBuffer = ByteBuffer.allocate(8);
 	
 	private ByteBuffer buffer;
-	
+
 	/***
 	 * Swaps the byte of a {@link Short} (2 byte) value.
 	 * @param data The value

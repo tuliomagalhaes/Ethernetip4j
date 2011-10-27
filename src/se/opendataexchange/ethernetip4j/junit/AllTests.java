@@ -15,7 +15,8 @@ import org.junit.runners.Suite;
   EthernetIpRegisterSessionRequestTest.class,
   SimpleControlLogixCommunicatorTest.class,
   UnconnectedMessagingTest.class,
-  ArrayTest.class
+  ArrayTest.class,
+  ExtensiveRWTest.class
 })
 
 public class AllTests {

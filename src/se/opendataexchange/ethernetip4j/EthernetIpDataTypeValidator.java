@@ -10,16 +10,16 @@ public class EthernetIpDataTypeValidator {
 	/***
 	 * PLC data types.
 	 */
-	private static final byte BOOL = (byte) 0xC1;
-	private static final byte BIT_ARRAY = (byte) 0xD3;
-	private static final byte SINT = (byte) 0xC2;
-	private static final byte INT = (byte) 0xC3;
-	private static final byte DINT = (byte) 0xC4;
+	private static final short BOOL = (short) 0xC1;
+	private static final short BIT_ARRAY = (short) 0xD3;
+	private static final short SINT = (short) 0xC2;
+	private static final short INT = (short) 0xC3;
+	private static final short DINT = (short) 0xC4;
 	//private static final byte LINT = (byte) 0xC5;
-	private static final byte REAL = (byte) 0xCA;
+	private static final short REAL = (short) 0xCA;
 	//private static final byte UDT = (byte) 0xA0;
 	
-	public static byte getType(Object value) throws NotImplementedException {
+	public static short getType(Object value) throws NotImplementedException {
 		if (value instanceof Boolean)
 			return BOOL;
 		else if (value instanceof byte[])
@@ -55,7 +55,7 @@ public class EthernetIpDataTypeValidator {
 	 */
 	public static Object getValues(EthernetIpBufferUtil buffer, int offset, int payload) throws InvalidTypeException{
 		int count;
-		switch (buffer.getByte(offset)){
+		switch (buffer.getINT(offset)){
 		case BOOL:
 			count = payload;
 			if (count > 1){
@@ -177,7 +177,7 @@ public class EthernetIpDataTypeValidator {
 	}
 	
 	public static void putTypeAndValue(Object value, EthernetIpBufferUtil buffer, int offset) throws NotImplementedException {
-		buffer.putByte(offset, getType(value));
+		buffer.putINT(offset, getType(value));
 		putValue(value, buffer, offset+2);
 	}
 
