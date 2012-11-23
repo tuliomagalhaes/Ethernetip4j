@@ -52,14 +52,11 @@ public class UnconnectedMessageManagerRequest {
 	}
 	
 	public void asReadRequestBuffer(String tagName, long sessionHandle, int arraySize) throws NotImplementedException{
-		cipLength = CipMessageRouterRequest.getSegmentLength(CipCommandServices.CIP_READ_DATA, tagName, null, 0)
-			+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
-		
 		messageBuffer.getBuffer().clear();
-		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
-		
 		try {
 			int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_READ_DATA, tagName, null, arraySize, messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 			CipCommandSpecificDataRequest.fillBuffer(segmentLength, messageBuffer);
 			CipPacketRequest.fillBuffer(messageBuffer);
 			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
@@ -70,15 +67,44 @@ public class UnconnectedMessageManagerRequest {
 		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 	}
 	
-	public void asReadRequestBuffer(String tagName, long sessionHandle, int arraySize, int offset) throws NotImplementedException{
-		cipLength = CipMessageRouterRequest.getSegmentLength(CipCommandServices.CIP_READ_FRAGMENT, tagName, null, 0)
-			+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
-		
+	public void asReadRequestBuffer(String tagName, long sessionHandle, int arraySize,
+			byte routePathLinkedAddress) throws NotImplementedException{
 		messageBuffer.getBuffer().clear();
-		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
-		
+		try {
+			int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_READ_DATA, tagName, null, arraySize, messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+			CipCommandSpecificDataRequest.fillBuffer(segmentLength,routePathLinkedAddress, messageBuffer);
+			CipPacketRequest.fillBuffer(messageBuffer);
+			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+			EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		} catch (InvalidTypeException e) {
+			e.printStackTrace();
+		}
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+	public void asReadRequestBuffer(String tagName, long sessionHandle, int arraySize,
+			byte routePathPort, byte routePathLinkedAddress) throws NotImplementedException{
+		messageBuffer.getBuffer().clear();
+		try {
+			int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_READ_DATA, tagName, null, arraySize, messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+			CipCommandSpecificDataRequest.fillBuffer(segmentLength, routePathPort, routePathLinkedAddress, messageBuffer);
+			CipPacketRequest.fillBuffer(messageBuffer);
+			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+			EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		} catch (InvalidTypeException e) {
+			e.printStackTrace();
+		}
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+	public void asReadRequestBuffer(String tagName, long sessionHandle, int arraySize, int offset) throws NotImplementedException{
+		messageBuffer.getBuffer().clear();
 		try{
 			int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_READ_FRAGMENT, tagName, null,arraySize,offset,  messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 			CipCommandSpecificDataRequest.fillBuffer(segmentLength, messageBuffer);	
 			CipPacketRequest.fillBuffer(messageBuffer);
 			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
@@ -89,15 +115,47 @@ public class UnconnectedMessageManagerRequest {
 		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 	}
 	
-	public void asReadRequestBuffer(String[] tagNames, long sessionHandle) throws NotImplementedException{
-		cipLength = CipMultipleMessageRouterRequest.getSegmentLength(tagNames)
-			+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
-
+	public void asReadRequestBuffer(String tagName, long sessionHandle, int arraySize, int offset, 
+			byte routePathLinkedAddress) throws NotImplementedException{
 		messageBuffer.getBuffer().clear();
-		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
-		
 		try{
-			int segmentLength = CipMultipleMessageRouterRequest.fillBuffer(tagNames,null, messageBuffer);
+			int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_READ_FRAGMENT, tagName, null,arraySize,offset,  messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+			CipCommandSpecificDataRequest.fillBuffer(segmentLength, routePathLinkedAddress, messageBuffer);	
+			CipPacketRequest.fillBuffer(messageBuffer);
+			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+			EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		}catch (InvalidTypeException e) {
+			e.printStackTrace();
+		}
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+	
+	public void asReadRequestBuffer(String tagName, long sessionHandle, int arraySize, int offset,
+			byte routePathPort, byte routePathLinkedAddress) throws NotImplementedException{
+		messageBuffer.getBuffer().clear();
+		try{
+			int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_READ_FRAGMENT, tagName, null,arraySize,offset,  messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+			CipCommandSpecificDataRequest.fillBuffer(segmentLength,routePathPort,routePathLinkedAddress, messageBuffer);	
+			CipPacketRequest.fillBuffer(messageBuffer);
+			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+			EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		}catch (InvalidTypeException e) {
+			e.printStackTrace();
+		}
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+	
+	
+	public void asReadRequestBuffer(String[] tagNames, long sessionHandle) throws NotImplementedException{
+		messageBuffer.getBuffer().clear();
+		try{
+			int segmentLength = CipMultipleMessageRouterRequest.fillBuffer(tagNames, messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 			CipCommandSpecificDataRequest.fillBuffer(segmentLength, messageBuffer);	
 			CipPacketRequest.fillBuffer(messageBuffer);
 			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
@@ -107,23 +165,78 @@ public class UnconnectedMessageManagerRequest {
 		}
 		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 	}
-	
-	public void asWriteRequestByteBuffer(String tagName, long sessionHandle, Object value, int arraySize) throws InvalidTypeException, NotImplementedException{
-		cipLength = CipMessageRouterRequest.getSegmentLength(CipCommandServices.CIP_WRITE_DATA, tagName, value, arraySize)
-		+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
-		
+
+	public void asReadRequestBuffer(String[] tagNames, long sessionHandle,byte routePathLinkedAddress) throws NotImplementedException{
 		messageBuffer.getBuffer().clear();
-		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
-		
+		try{
+			int segmentLength = CipMultipleMessageRouterRequest.fillBuffer(tagNames, messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+			CipCommandSpecificDataRequest.fillBuffer(segmentLength,routePathLinkedAddress, messageBuffer);	
+			CipPacketRequest.fillBuffer(messageBuffer);
+			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+			EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		}catch(TooLongMessageException e){
+			e.printStackTrace();
+		}
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+
+	public void asReadRequestBuffer(String[] tagNames, long sessionHandle,
+			byte routePathPort, byte routePathLinkedAddress) throws NotImplementedException{
+		messageBuffer.getBuffer().clear();
+		try{
+			int segmentLength = CipMultipleMessageRouterRequest.fillBuffer(tagNames, messageBuffer);
+			cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+			messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+			CipCommandSpecificDataRequest.fillBuffer(segmentLength, routePathPort, routePathLinkedAddress, messageBuffer);	
+			CipPacketRequest.fillBuffer(messageBuffer);
+			EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+			EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		}catch(TooLongMessageException e){
+			e.printStackTrace();
+		}
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+
+	public void asWriteRequestByteBuffer(String tagName, long sessionHandle, Object value, int arraySize) throws InvalidTypeException, NotImplementedException{
+		messageBuffer.getBuffer().clear();
 		int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_WRITE_DATA, tagName, value,arraySize, messageBuffer);
+		cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 		CipCommandSpecificDataRequest.fillBuffer(segmentLength, messageBuffer);		
 		CipPacketRequest.fillBuffer(messageBuffer);
 		EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
 		EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
-		
 		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 	}
 	
+	public void asWriteRequestByteBuffer(String tagName, long sessionHandle, Object value, int arraySize,
+			byte routePathLinkedAddress) throws InvalidTypeException, NotImplementedException{
+		messageBuffer.getBuffer().clear();
+		int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_WRITE_DATA, tagName, value,arraySize, messageBuffer);
+		cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+		CipCommandSpecificDataRequest.fillBuffer(segmentLength, routePathLinkedAddress, messageBuffer);		
+		CipPacketRequest.fillBuffer(messageBuffer);
+		EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+		EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+
+	public void asWriteRequestByteBuffer(String tagName, long sessionHandle, Object value, int arraySize,
+			byte routePathPort, byte routePathLinkedAddress) throws InvalidTypeException, NotImplementedException{
+		messageBuffer.getBuffer().clear();
+		int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_WRITE_DATA, tagName, value,arraySize, messageBuffer);
+		cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+		CipCommandSpecificDataRequest.fillBuffer(segmentLength, routePathPort, routePathLinkedAddress, messageBuffer);		
+		CipPacketRequest.fillBuffer(messageBuffer);
+		EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+		EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+
 	/***
 	 * Fragmented read
 	 * @param tagName
@@ -136,18 +249,40 @@ public class UnconnectedMessageManagerRequest {
 	 * @throws NotImplementedException
 	 */
 	public void asWriteRequestByteBuffer(String tagName, long sessionHandle, Object value, int arraySize, int offset, int writeCount) throws InvalidTypeException, NotImplementedException{
-		cipLength = CipMessageRouterRequest.getSegmentLength(CipCommandServices.CIP_WRITE_FRAGMENT, tagName, value, writeCount)
-		+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
-		
 		messageBuffer.getBuffer().clear();
-		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
-		
 		int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_WRITE_FRAGMENT, tagName, value,arraySize, offset, writeCount, messageBuffer);
+		cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 		CipCommandSpecificDataRequest.fillBuffer(segmentLength, messageBuffer);		
 		CipPacketRequest.fillBuffer(messageBuffer);
 		EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
 		EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
-		
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+	
+	public void asWriteRequestByteBuffer(String tagName, long sessionHandle, Object value, 
+			int arraySize, int offset, int writeCount, byte routePathLinkedAddress) throws InvalidTypeException, NotImplementedException{
+		messageBuffer.getBuffer().clear();
+		int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_WRITE_FRAGMENT, tagName, value,arraySize, offset, writeCount, messageBuffer);
+		cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+		CipCommandSpecificDataRequest.fillBuffer(segmentLength, routePathLinkedAddress, messageBuffer);		
+		CipPacketRequest.fillBuffer(messageBuffer);
+		EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+		EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
+		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+	}
+	
+	public void asWriteRequestByteBuffer(String tagName, long sessionHandle, Object value, int arraySize, 
+			int offset, int writeCount, byte routePathPort, byte routePathLinkedAddress) throws InvalidTypeException, NotImplementedException{
+		messageBuffer.getBuffer().clear();
+		int segmentLength = CipMessageRouterRequest.fillBuffer(CipCommandServices.CIP_WRITE_FRAGMENT, tagName, value,arraySize, offset, writeCount, messageBuffer);
+		cipLength = segmentLength+CipPacketRequest.SEGMENT_LENGTH + CipCommandSpecificDataRequest.SEGMENT_LENGTH;
+		messageBuffer.getBuffer().limit(MESSAGE_REQUEST_BASE_LENGTH + cipLength);
+		CipCommandSpecificDataRequest.fillBuffer(segmentLength, routePathPort, routePathLinkedAddress, messageBuffer);		
+		CipPacketRequest.fillBuffer(messageBuffer);
+		EthernetIpItemStruct.fillDataItem(cipLength, messageBuffer);
+		EthernetIpCommandSpecificData.fillBuffer(messageBuffer);
 		buildHeader(sessionHandle, MESSAGE_REQUEST_BASE_LENGTH + cipLength);
 	}
 	
