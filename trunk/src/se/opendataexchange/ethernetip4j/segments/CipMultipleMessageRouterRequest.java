@@ -33,21 +33,19 @@ public class CipMultipleMessageRouterRequest{
 		return length +2; //TODO: Remove after confirmation
 	}
 	
-	public static int fillBuffer(String[] tagNames, Object[] values, EthernetIpBufferUtil buffer) throws TooLongMessageException, NotImplementedException{
+	public static int fillBuffer(String[] tagNames, EthernetIpBufferUtil buffer) throws TooLongMessageException, NotImplementedException{
 		int bufferOffsetMessage = 8 + 2*tagNames.length;
 		buildHeader(buffer, DEFAULT_OFFSET, tagNames.length);
 		for(int x = 0; x<tagNames.length; x++)
-		{			
+		{
+			int size = 0;
 			try {
-				CipMessageRouterRequest.fillBuffer(0x4C, tagNames[x], null, 1, buffer, bufferOffsetMessage + DEFAULT_OFFSET);
+				size=CipMessageRouterRequest.fillBuffer(0x4C, tagNames[x], null, 1, buffer, bufferOffsetMessage + DEFAULT_OFFSET);
 			} catch (InvalidTypeException e) {
 				e.printStackTrace();
 			}
 			buffer.putUINT(8 + x*2 + DEFAULT_OFFSET, bufferOffsetMessage - 6); // Header not included in the offset
-			if (values != null)
-				bufferOffsetMessage += CipMessageRouterRequest.getSegmentLength(0x4C, tagNames[x], values[x], 1);
-			else
-				bufferOffsetMessage += CipMessageRouterRequest.getSegmentLength(0x4C, tagNames[x], null, 1);
+			bufferOffsetMessage += size;
 		}
 		return bufferOffsetMessage + 2;//TODO: Remove after confirmation
 	}

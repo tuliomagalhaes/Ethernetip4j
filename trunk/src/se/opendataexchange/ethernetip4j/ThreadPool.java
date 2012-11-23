@@ -39,6 +39,7 @@ public class ThreadPool {
 				try {
 					r.run();
 				} catch (RuntimeException e) {
+					
 				}
 			}
 		}

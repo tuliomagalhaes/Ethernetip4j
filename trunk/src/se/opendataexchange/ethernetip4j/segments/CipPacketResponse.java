@@ -116,13 +116,14 @@ public class CipPacketResponse {
 			throw new InvalidParameterException("The IOI word length did not match the amount of IOI which was processed. Error code: 0x26");
 		case 0x00:
 			return true;
+		case 0x01:
 		case (byte) 0xFF:
 			StringBuilder sb = new StringBuilder();
 			for(int i=2; i<6; i++)
 				sb.append(HexConverter.byte2hex(buffer.getByte(offset + i))).append(" ");
 			throw new OtherWithExtendedCodeException("Error with extended status. Error code: 0xFF. Bytes: " + sb.toString());					
 		default:
-			throw new OtherWithExtendedCodeException("Error with extended status: "+error);
+			throw new OtherWithExtendedCodeException("Unknown error: "+HexConverter.byte2hex(error));
 		}
 	}
 	

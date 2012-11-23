@@ -17,7 +17,7 @@ public class EthernetIpDataTypeValidator {
 	private static final short DINT = (short) 0xC4;
 	//private static final byte LINT = (byte) 0xC5;
 	private static final short REAL = (short) 0xCA;
-	//private static final byte UDT = (byte) 0xA0;
+	private static final byte UDT = (byte) 0xA0;
 	
 	public static short getType(Object value) throws NotImplementedException {
 		if (value instanceof Boolean)
@@ -125,43 +125,46 @@ public class EthernetIpDataTypeValidator {
 		return null;
 	}
 
-	public static void putValues(Object value, EthernetIpBufferUtil buffer, int offset, int arraySize, int dataOffset) throws NotImplementedException {
+	public static int putValues(Object value, EthernetIpBufferUtil buffer, int offset, int arraySize, int dataOffset) throws NotImplementedException {
+		int size=0;
 		if (value instanceof Object[]){
 			int tmpOffset = offset;
 			Object[] v = (Object[]) value;
 			int vSize = sizeOf(v[0]);
 			int startIdx = dataOffset/vSize;
 			for (int i=startIdx; i<(startIdx + arraySize); i++){
-				putValue(v[i], buffer, tmpOffset);
+				size=putValue(v[i], buffer, tmpOffset);
 				tmpOffset += vSize;
 			}
 		}else{
-			putValue(value, buffer, offset);
+			size = putValue(value, buffer, offset);
 		}
+		return size;
 	}
 	
-	public static void putValue(Object value, EthernetIpBufferUtil buffer, int offset) throws NotImplementedException {
-		if (value instanceof Boolean)
+	public static int putValue(Object value, EthernetIpBufferUtil buffer, int offset) throws NotImplementedException {
+		int size=sizeOf(value);
+		if (value instanceof Boolean){
 			if ((Boolean)value)
 				buffer.putByte(offset, (byte) 0x01);
 			else
 				buffer.putByte(offset, (byte) 0x00);
-		else if (value instanceof byte[])
+		}else if (value instanceof byte[]){
 			buffer.putByteArray(offset, (byte[]) value);
-		else if (value instanceof Character)
+		}else if (value instanceof Character){
 			buffer.putSINT((Character)value, offset);
-		else if (value instanceof Short)
+		}else if (value instanceof Short){
 			buffer.putINT(offset, (Short)value);
-		else if (value instanceof Integer)
+		}else if (value instanceof Integer){
 			buffer.putDINT(offset, (Integer)value);
-		else if (value instanceof Float)
+		}else if (value instanceof Float){
 			buffer.putREAL(offset, (Float)value);
-		else if (value instanceof Object[])
-			putValue(((Object[])value)[0], buffer, offset);
-		else
-		{
+		}else if (value instanceof Object[]){
+			size=putValue(((Object[])value)[0], buffer, offset);	
+		}else{
 			throw new NotImplementedException();
 		}
+		return size;
 	}
 	
 	public static int sizeOf(Object value) throws NotImplementedException {

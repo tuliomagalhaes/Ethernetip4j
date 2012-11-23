@@ -42,6 +42,28 @@ public class CipCommandSpecificDataRequest {
 		setRoutePathLinkAddress(messageBuffer, DEFAULT_OFFSET, (byte)0x00, msgReqLength);
 	}	
 	
+	public static void fillBuffer(int msgReqLength, byte routePathLinkedAddress,
+			EthernetIpBufferUtil messageBuffer ){
+		setPriority(messageBuffer, DEFAULT_OFFSET, (short)0x0A);
+		setTimeout_ticks(messageBuffer, DEFAULT_OFFSET, (byte)0xF0);
+		setMessageRequestSize(messageBuffer, DEFAULT_OFFSET, msgReqLength);
+		setRoutePathSize(messageBuffer, DEFAULT_OFFSET, (byte)0x01, msgReqLength);
+		setReservedPosition(messageBuffer, DEFAULT_OFFSET, (byte)0x00, msgReqLength);
+		setRoutePathPort(messageBuffer, DEFAULT_OFFSET, (byte)0x01, msgReqLength);
+		setRoutePathLinkAddress(messageBuffer, DEFAULT_OFFSET, (byte)routePathLinkedAddress, msgReqLength);
+	}
+	
+	public static void fillBuffer(int msgReqLength, byte routePathLinkedAddress, byte routePathPort,
+			EthernetIpBufferUtil messageBuffer ){
+		setPriority(messageBuffer, DEFAULT_OFFSET, (short)0x0A);
+		setTimeout_ticks(messageBuffer, DEFAULT_OFFSET, (byte)0xF0);
+		setMessageRequestSize(messageBuffer, DEFAULT_OFFSET, msgReqLength);
+		setRoutePathSize(messageBuffer, DEFAULT_OFFSET, (byte)0x01, msgReqLength);
+		setReservedPosition(messageBuffer, DEFAULT_OFFSET, (byte)0x00, msgReqLength);
+		setRoutePathPort(messageBuffer, DEFAULT_OFFSET, (byte)routePathPort, msgReqLength);
+		setRoutePathLinkAddress(messageBuffer, DEFAULT_OFFSET, (byte)routePathLinkedAddress, msgReqLength);
+	}
+
 	public int getPacketLength(){
 		return msgReqLength + SEGMENT_LENGTH; //this.buffer.getBufferLength();
 	}
