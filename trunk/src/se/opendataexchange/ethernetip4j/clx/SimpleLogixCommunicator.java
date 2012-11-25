@@ -517,4 +517,142 @@ public class SimpleLogixCommunicator extends ControlLogixConnector {
 				Object[] objs = (Object[]) this.read(tagName,1); 
 				return objs[0];
 			}
+	/***
+	 * 
+	 * @param tagName, Tag name
+	 * @param cpuSlot, slot in Control Logix rack for CPU.
+	 * @return Tag value
+	 * @throws PathSegmentException
+	 * @throws ItemNotFoundException
+	 * @throws ProcessingAttributesException
+	 * @throws InsufficientCommandException
+	 * @throws InsufficientNrOfAttributesException
+	 * @throws OtherWithExtendedCodeException
+	 * @throws ResponseBufferOverflowException
+	 * @throws InvalidTypeException
+	 * @throws IOException
+	 * @throws EmbeddedServiceException
+	 * @throws NotImplementedException
+	 */
+	public Object read(String tagName, byte cpuSlot) throws PathSegmentException,
+	ItemNotFoundException, ProcessingAttributesException,
+	InsufficientCommandException, InsufficientNrOfAttributesException,
+	OtherWithExtendedCodeException, ResponseBufferOverflowException,
+	InvalidTypeException, IOException, EmbeddedServiceException, NotImplementedException {
+		Object[] objs = (Object[]) this.read(tagName,1,cpuSlot); 
+		return objs[0];
+	}
+	
+	/***
+	 * Reads a tag specifying route in rack
+	 * @param tagName, Tag name
+	 * @param ethernetSlot, slot in Control Logix rack for ethernet card
+	 * @param cpuSlot, slot slot in Control Logix rack for CPU
+	 * @return Tag value
+	 * @throws PathSegmentException
+	 * @throws ItemNotFoundException
+	 * @throws ProcessingAttributesException
+	 * @throws InsufficientCommandException
+	 * @throws InsufficientNrOfAttributesException
+	 * @throws OtherWithExtendedCodeException
+	 * @throws ResponseBufferOverflowException
+	 * @throws InvalidTypeException
+	 * @throws IOException
+	 * @throws EmbeddedServiceException
+	 * @throws NotImplementedException
+	 */
+	public Object read(String tagName,byte ethernetSlot,byte cpuSlot) throws PathSegmentException,
+	ItemNotFoundException, ProcessingAttributesException,
+	InsufficientCommandException, InsufficientNrOfAttributesException,
+	OtherWithExtendedCodeException, ResponseBufferOverflowException,
+	InvalidTypeException, IOException, EmbeddedServiceException, NotImplementedException {
+		Object[] objs = (Object[]) this.read(tagName,1,ethernetSlot,cpuSlot); 
+		return objs[0];
+	}
+	
+	/***
+	 * Writes a value to the CPU
+	 * @param tagName, Tag name
+	 * @param value, Tag value
+	 * @throws PathSegmentException
+	 * @throws InvalidTypeException
+	 * @throws ItemNotFoundException
+	 * @throws ResponseBufferOverflowException
+	 * @throws ProcessingAttributesException
+	 * @throws InsufficientCommandException
+	 * @throws InsufficientNrOfAttributesException
+	 * @throws OtherWithExtendedCodeException
+	 * @throws IOException
+	 * @throws EmbeddedServiceException
+	 * @throws NotImplementedException
+	 */
+	public void write(String tagName, Object value)
+	throws PathSegmentException, InvalidTypeException,
+	ItemNotFoundException, ResponseBufferOverflowException,
+	ProcessingAttributesException, InsufficientCommandException,
+	InsufficientNrOfAttributesException,
+	OtherWithExtendedCodeException, IOException,
+	EmbeddedServiceException, NotImplementedException {
+		//Send SendRRData request
+		write(tagName,value,1);
+	}
+	
+	/***
+	 * Writes a value to a CPU at a certain slot in the Control Logix rack
+	 * @param tagName, Tag name
+	 * @param value, Tag value
+	 * @param cpuSlot, Slot in rack for CPU
+	 * @throws PathSegmentException
+	 * @throws InvalidTypeException
+	 * @throws ItemNotFoundException
+	 * @throws ResponseBufferOverflowException
+	 * @throws ProcessingAttributesException
+	 * @throws InsufficientCommandException
+	 * @throws InsufficientNrOfAttributesException
+	 * @throws OtherWithExtendedCodeException
+	 * @throws IOException
+	 * @throws EmbeddedServiceException
+	 * @throws NotImplementedException
+	 */
+	public void write(String tagName, Object value, byte cpuSlot)
+	throws PathSegmentException, InvalidTypeException,
+	ItemNotFoundException, ResponseBufferOverflowException,
+	ProcessingAttributesException, InsufficientCommandException,
+	InsufficientNrOfAttributesException,
+	OtherWithExtendedCodeException, IOException,
+	EmbeddedServiceException, NotImplementedException {
+		//Send SendRRData request
+		write(tagName,value,1,cpuSlot);
+	}
+	
+	/***
+	 * Writes a value to a CPU in a certain slot in a Control Logix rack from an Ethernet card in a certain slot
+	 * @param tagName
+	 * @param value
+	 * @param ethernetSlot
+	 * @param cpuSlot
+	 * @throws PathSegmentException
+	 * @throws InvalidTypeException
+	 * @throws ItemNotFoundException
+	 * @throws ResponseBufferOverflowException
+	 * @throws ProcessingAttributesException
+	 * @throws InsufficientCommandException
+	 * @throws InsufficientNrOfAttributesException
+	 * @throws OtherWithExtendedCodeException
+	 * @throws IOException
+	 * @throws EmbeddedServiceException
+	 * @throws NotImplementedException
+	 */
+	public void write(String tagName, Object value, byte ethernetSlot, byte cpuSlot)
+	throws PathSegmentException, InvalidTypeException,
+	ItemNotFoundException, ResponseBufferOverflowException,
+	ProcessingAttributesException, InsufficientCommandException,
+	InsufficientNrOfAttributesException,
+	OtherWithExtendedCodeException, IOException,
+	EmbeddedServiceException, NotImplementedException {
+		//Send SendRRData request
+		write(tagName,value,1,ethernetSlot,cpuSlot);
+	}
+	
+	
 }
