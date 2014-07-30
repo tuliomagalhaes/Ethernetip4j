@@ -1,9 +1,7 @@
-This project was created by: daniel.biloglav, sewalliniusm and maja.arvehammar
+This project was created by: daniel.biloglav, sewalliniusm and maja.arvehammar <br />
 Google Code Repository: https://code.google.com/p/ethernetip4j/
 
 <h2>Introduction</h2>
-EthernetIp4j is a communication protocol for Rockwell's Allen-Bradley PLC systems, written entirely in Java. 
-
 This page will show you how to use EthernetIP4J library.
 
 <h2>Details</h2>
